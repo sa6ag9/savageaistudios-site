@@ -26,11 +26,36 @@
 - Removed older unsupported counts from the catalog, retained distinct “in the lab” products without checkout claims.
 - Reused isolated responsive styling and accessible mobile menu.
 
-## Phase 3: comprehensive page motion\n- Inventoried 39 HTML pages in the source repository (6 top-level, 33 nested products/coloring-book pages).\n- Top-level pages retain their established `motion.js` particle/reveal/page transition engine.\n- All 33 nested pages now load `motion-universal.css` and `motion-universal.js` with correct relative paths; scroll reveals, hover response and a low-power decorative particle layer work without intercepting links.\n- Honors `prefers-reduced-motion`, data saving, background-tab pausing and offscreen pausing; the site remains legible without JS.\n- Existing Stripe purchase URLs were source-preserved through each nested page edit (no purchase execution asserted).\n- Runtime browser, mobile, keyboard, assistive technology and performance verification remain mandatory; source tests alone do not prove WCAG compliance or animation quality.\n\n## Automated regression gate
+## Phase 3: comprehensive page motion
+- Inventoried 39 HTML pages in the source repository (6 top-level, 33 nested products/coloring-book pages).
+- Top-level pages retain their established `motion.js` particle/reveal/page transition engine.
+- All 33 nested pages now load `motion-universal.css` and `motion-universal.js` with correct relative paths; scroll reveals, hover response and a low-power decorative particle layer work without intercepting links.
+- Honors `prefers-reduced-motion`, data saving, background-tab pausing and offscreen pausing; the site remains legible without JS.
+- Existing Stripe purchase URLs were source-preserved through each nested page edit (no purchase execution asserted).
+- Runtime browser, mobile, keyboard, assistive technology and performance verification remain mandatory; source tests alone do not prove WCAG compliance or animation quality.
+
+## Automated regression gate
 ```bash
-node --test tests/site-refresh.test.mjs
+node --check motion.js
+node --check motion-universal.js
+node --test tests/*.test.mjs
 ```
 The test suite is dependency-free and covers source links, headings, navigation semantics, retained destinations, claim hygiene, responsive/reduced-motion declarations and page file references. It is **static analysis only**. A passed static test does not certify the website's accessibility or confirm third-party service/checkout functionality.
+
+## Phases 4–5: sitewide consistency and actual verification
+- Shared visual identity and responsive mobile/desktop navigation now applied to the About, Overmind, Creative Lab and Coding Blind pages as well as the upgraded homepage and catalog.
+- Adjusted the About page to remove unsupported numerical counter claims; clarified pending work versus shipping capabilities without inventing product numbers.
+- All 33 nested product and coloring-book pages have a keyboard skip link and `main` target.
+- All 31 actions across the SIA-V6 and coloring-book catalogs have product-specific accessible names, preserving original Stripe URLs and "coming soon"/waitlist actions.
+- Fixed root `motion.js` to stop rendering offscreen/background/reduced-motion, cap expensive frames, and never intercept external links or checkout navigation. Node VM tests cover these behaviors.
+
+## On-device evidence (October 22, 2026)
+**Execution platform:** Authorized Android Termux device through Remote Desktop Commander 0.3.1, Node 24.18.0, no paid tooling.
+- Latest source snapshot loaded from public GitHub feature branch, both motion scripts passed `node --check`, and `node --test tests/*.test.mjs` returned **22 passed, 0 failed, exit code 0**.
+- Full website audit: **39 HTML pages, zero broken local href/src targets or fragment links** in current source snapshot. This check is now automated in `tests/all-pages-links.test.mjs`.
+- Live network HEAD probes from the user's phone: **14 of 14 original Stripe URLs** and **5 of 5 Bubble app homepage URLs** returned HTTP 200. The Bubble BalloonBoard destination redirected to an authentication screen, a normal navigation behavior; do not interpret this as customer functionality verified.
+- HTTP probes verify reachability only. No account logins, Stripe purchases, real fulfillment, visual browser rendering, screen-reader acceptance tests or Relume project import were performed as part of this evidence.
+- `https://www.relume.ai/app` returned HTTP 200 from Termux but authenticated trial/URL import access is still unknown.
 
 ## Mandatory before merging to main or publishing
 1. Review an actual rendered mobile and desktop preview, visual contrast and responsive navigation at 320px through desktop and browser zoom to 400%.
