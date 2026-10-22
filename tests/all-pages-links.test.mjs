@@ -63,3 +63,19 @@ test("main-page modernized navigation uses one accessible mobile disclosure",()=
     assert.match(c,/<main id="main">/);
   }
 });
+
+test("every nested page includes a skip link and its main target",()=>{
+  for(const page of pages.filter(p=>relative(root,p).includes(sep))){
+    const html=readFileSync(page,"utf8");
+    assert.match(html,/<a class="skip-link" href="#main">Skip to main content<\/a>/,relative(root,page));
+    assert.match(html,/<main id="main">/,relative(root,page));
+  }
+});
+
+test("busy catalogs have product-specific accessible purchase names",()=>{
+  for(const [path,count] of [["products/index.html",26],["coloring-books/index.html",5]]){
+    const html=readFileSync(resolve(root,path),"utf8");
+    assert.equal((html.match(/class="buy-btn"/g)||[]).length,count);
+    assert.equal((html.match(/class="buy-btn" href="[^"]+" aria-label="[^"]+"/g)||[]).length,count);
+  }
+});
