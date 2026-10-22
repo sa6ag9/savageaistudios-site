@@ -1,0 +1,27 @@
+name: Studio homepage regression
+on:
+  push:
+    branches:
+      - feature/relume-style-upgrade-20261022
+  pull_request:
+    paths:
+      - index.html
+      - site-refresh.css
+      - tests/site-refresh.test.mjs
+      - .github/workflows/site-refresh.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  homepage-static:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run built-in node tests
+        run: node --test tests/site-refresh.test.mjs
