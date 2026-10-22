@@ -20,6 +20,12 @@
 - Public homepage biography differs from `main`; product readiness/counts also disagree. Before release, reconcile claims with owner and current product/customer-journey evidence.
 - Relume MCP not discoverable as an available tool in this ChatGPT context; the available browser attempts failed at connection level (not authentication). No claim of Relume project creation.
 
+## Phase 2: catalog modernization
+- Reworked `work.html` catalog hero, section jump menu, product cards and buyer-facing copy.
+- Preserved 14 original Stripe purchase URLs (same sequence and targets); renamed 15 catalog purchase/product buttons for accessible product context. These are **source checks, not live payment acceptance checks**.
+- Removed older unsupported counts from the catalog, retained distinct “in the lab” products without checkout claims.
+- Reused isolated responsive styling and accessible mobile menu.
+
 ## Automated regression gate
 ```bash
 node --test tests/site-refresh.test.mjs
