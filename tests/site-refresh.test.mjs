@@ -111,3 +111,41 @@ test("catalog category navigation and purchase URLs stay stable",() => {
   assert.equal((catalog.match(/class="buy-btn" href="[^"]+" aria-label="/g)||[]).length,15);
   assert.doesNotMatch(catalog,/81 actors built|33 repositories|Eleven product families, every one/);
 });
+
+test("all 39 discovered HTML pages load the correct accessible motion engine",() => {
+  const rootPages=["about.html","coding-blind.html","index.html","overmind.html","studio.html","work.html"];
+  const nestedPages=["coloring-books/index.html","coloring-books/thanks-bird.html","coloring-books/thanks-bridge.html","coloring-books/thanks-honey.html","coloring-books/thanks-moon.html","coloring-books/thanks-rain.html","products/agent-protocol-settlement/index.html","products/ai-action-adjudication-api/index.html","products/anomaly-detection-api/index.html","products/benchmark-robustness-audit/index.html","products/causalswarm-consensus-assessment/index.html","products/ceros-cockpit-ui/index.html","products/computation-proof-certificate/index.html","products/conservation-sentinel-monitor/index.html","products/constitutional-governance-api/index.html","products/constitutional-triadic-scorer/index.html","products/domain-vertical-audit/index.html","products/dual-anchor-provenance-audit/index.html","products/durak-sca-engine/index.html","products/fusion-pre-shot-certification/index.html","products/index.html","products/mcp-bridge/index.html","products/mission-control-whitelabel/index.html","products/monetized-mcp-server/index.html","products/organism-watchdog/index.html","products/phase-space-navigator/index.html","products/post-quantum-signing-cli/index.html","products/powers-engine-api/index.html","products/quantum-verification-receipts/index.html","products/repo-reality-audit/index.html","products/sdee-api/index.html","products/symplectic-wasm-sdk/index.html","products/tollbooth-blackbox-api/index.html"];
+  assert.equal(rootPages.length+nestedPages.length,39);
+  const sharedCss=readFileSync(resolve(root,"motion-universal.css"),"utf8");
+  const sharedJs=readFileSync(resolve(root,"motion-universal.js"),"utf8");
+  assert.match(sharedCss,/prefers-reduced-motion:reduce/);
+  assert.match(sharedJs,/prefers-reduced-motion: reduce/);
+  assert.match(sharedJs,/IntersectionObserver/);
+  assert.match(sharedJs,/document.hidden/);
+  assert.match(sharedJs,/saveData/);
+  for(const file of rootPages) {
+    const html=readFileSync(resolve(root,file),"utf8");
+    assert.match(html,/src="motion.js"/,"Existing root motion missing: "+file);
+  }
+  for(const file of nestedPages) {
+    const html=readFileSync(resolve(root,file),"utf8");
+    const prefix="../".repeat(file.split("/").length-1);
+    assert.ok(html.includes('href="'+prefix+'motion-universal.css"'),"Missing CSS on "+file);
+    assert.ok(html.includes('src="'+prefix+'motion-universal.js"'),"Missing JS on "+file);
+    assert.ok(html.includes('href="'+prefix+'style.css"'),"Base styles changed on "+file);
+    assert.equal((html.match(/src="[^"]*motion-universal.js"/g)||[]).length,1,"Duplicate JS on "+file);
+    assert.equal((html.match(/href="[^"]*motion-universal.css"/g)||[]).length,1,"Duplicate CSS on "+file);
+  }
+});
+
+test("nested page motion is visual-only and never blocks product checkout",() => {
+  const js=readFileSync(resolve(root,"motion-universal.js"),"utf8");
+  const css=readFileSync(resolve(root,"motion-universal.css"),"utf8");
+  assert.match(js,/aria-hidden/);
+  assert.match(js,/role","presentation/);
+  assert.match(css,/pointer-events:none/);
+  assert.match(js,/reduced.matches/);
+  assert.match(js,/cancelAnimationFrame/);
+  assert.match(css,/motion-enter\.motion-visible/);
+  assert.equal((css.match(/\{/g)||[]).length,(css.match(/\}/g)||[]).length);
+});
