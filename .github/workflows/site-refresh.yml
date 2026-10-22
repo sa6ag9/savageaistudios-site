@@ -8,8 +8,10 @@ on:
       - index.html
       - site-refresh.css
       - work.html
+      - 'tests/**'
       - 'products/**'
       - 'coloring-books/**'
+      - motion.js
       - motion-universal.js
       - motion-universal.css
       - tests/site-refresh.test.mjs
@@ -30,5 +32,6 @@ jobs:
           node-version: '22'
       - name: Run built-in node tests
         run: |
+          node --check motion.js
           node --check motion-universal.js
-          node --test tests/site-refresh.test.mjs
+          node --test tests/*.test.mjs
