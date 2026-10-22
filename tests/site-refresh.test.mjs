@@ -97,3 +97,17 @@ test("motion engine is unchanged and still available",() => {
   assert.ok(existsSync(resolve(root,"motion.js")));
   assert.match(homepage,/<canvas class="hero-canvas" aria-hidden="true"><\/canvas>/);
 });
+
+test("catalog category navigation and purchase URLs stay stable",() => {
+  const catalog=readFileSync(resolve(root,"work.html"),"utf8");
+  assert.match(catalog,/class="refresh-v3 catalog-refresh"/);
+  assert.match(catalog,/<details class="mobile-menu">/);
+  for(const section of ["software","audits","applications","sia-v6"]) {
+    assert.ok(catalog.includes('id="'+section+'"'),"Missing catalog section: "+section);
+  }
+  const stripeLinks=[...catalog.matchAll(/href="(https:\/\/buy\.stripe\.com\/[^"]+)"/g)].map(m=>m[1]);
+  assert.deepEqual(stripeLinks,["https://buy.stripe.com/28E7sKaxKagE8n00yY4Ni03","https://buy.stripe.com/3cI8wO9tG0G45aObdC4Ni0p","https://buy.stripe.com/cNicN4gW8ewUav8ftS4Ni02","https://buy.stripe.com/7sYaEWdJW9cAeLogxW4Ni01","https://buy.stripe.com/bJe9ASbBO60oeLobdC4Ni0q","https://buy.stripe.com/3cI14m21e74s7iWepO4Ni05","https://buy.stripe.com/bJeaEWcFSgF21YC0yY4Ni08","https://buy.stripe.com/4gM6oG0Xa3Sg7iW95u4Ni0d","https://buy.stripe.com/bJe14m49mgF29r481q4Ni06","https://buy.stripe.com/eVq28qbBO2OccDg2H64Ni07","https://buy.stripe.com/5kQaEW0XaewUav83La4Ni0a","https://buy.stripe.com/eVq14m35idsQ0UychG4Ni09","https://buy.stripe.com/4gMbJ0cFSfAY46K3La4Ni04","https://buy.stripe.com/28E3cu21e3SgbzcdlK4Ni00"]);
+  assert.equal((catalog.match(/class="buy-btn" href=/g)||[]).length,15);
+  assert.equal((catalog.match(/class="buy-btn" href="[^"]+" aria-label="/g)||[]).length,15);
+  assert.doesNotMatch(catalog,/81 actors built|33 repositories|Eleven product families, every one/);
+});
