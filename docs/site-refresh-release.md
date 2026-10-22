@@ -26,7 +26,7 @@
 - Removed older unsupported counts from the catalog, retained distinct “in the lab” products without checkout claims.
 - Reused isolated responsive styling and accessible mobile menu.
 
-## Automated regression gate
+## Phase 3: comprehensive page motion\n- Inventoried 39 HTML pages in the source repository (6 top-level, 33 nested products/coloring-book pages).\n- Top-level pages retain their established `motion.js` particle/reveal/page transition engine.\n- All 33 nested pages now load `motion-universal.css` and `motion-universal.js` with correct relative paths; scroll reveals, hover response and a low-power decorative particle layer work without intercepting links.\n- Honors `prefers-reduced-motion`, data saving, background-tab pausing and offscreen pausing; the site remains legible without JS.\n- Existing Stripe purchase URLs were source-preserved through each nested page edit (no purchase execution asserted).\n- Runtime browser, mobile, keyboard, assistive technology and performance verification remain mandatory; source tests alone do not prove WCAG compliance or animation quality.\n\n## Automated regression gate
 ```bash
 node --test tests/site-refresh.test.mjs
 ```
