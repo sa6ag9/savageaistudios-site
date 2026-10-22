@@ -7,6 +7,7 @@ on:
     paths:
       - index.html
       - site-refresh.css
+      - work.html
       - tests/site-refresh.test.mjs
       - .github/workflows/site-refresh.yml
   workflow_dispatch:
