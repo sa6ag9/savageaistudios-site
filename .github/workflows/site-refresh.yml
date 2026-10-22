@@ -8,6 +8,10 @@ on:
       - index.html
       - site-refresh.css
       - work.html
+      - 'products/**'
+      - 'coloring-books/**'
+      - motion-universal.js
+      - motion-universal.css
       - tests/site-refresh.test.mjs
       - .github/workflows/site-refresh.yml
   workflow_dispatch:
@@ -25,4 +29,6 @@ jobs:
         with:
           node-version: '22'
       - name: Run built-in node tests
-        run: node --test tests/site-refresh.test.mjs
+        run: |
+          node --check motion-universal.js
+          node --test tests/site-refresh.test.mjs
