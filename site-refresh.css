@@ -183,3 +183,44 @@
  .refresh-v3.catalog-refresh .catalog-products .grid {grid-template-columns:1fr}
  .refresh-v3.catalog-refresh .catalog-hero .hero-inner {padding-top:4.3rem;padding-bottom:4rem}
 }
+
+/* Unified inner pages — typography, navigation and motion-safe visual language. */
+.refresh-v3.interior-refresh .page-hero {
+  background:radial-gradient(ellipse 54rem 28rem at 82% 8%,rgba(32,125,150,.22),transparent 66%),
+             radial-gradient(ellipse 34rem 22rem at 6% 100%,rgba(203,141,71,.13),transparent 72%),
+             linear-gradient(155deg,#0c1623,#080d14 70%);
+  animation:none;
+}
+.refresh-v3.interior-refresh .page-hero .hero-inner {
+  padding-top:clamp(4.7rem,7vw,7.5rem);
+  padding-bottom:clamp(4.6rem,7vw,7rem);
+}
+.refresh-v3.interior-refresh .page-hero h1 {
+  max-width:18ch;
+  font-size:clamp(3rem,6vw,5.8rem);
+  line-height:1.065;
+  letter-spacing:-.055em;
+  font-weight:850;
+  text-wrap:balance;
+}
+.refresh-v3.interior-refresh .hero-sub {
+  font-size:clamp(1.02rem,1.6vw,1.28rem);
+  color:#c2d0dc;
+  max-width:42rem;
+  line-height:1.75;
+}
+.refresh-v3.interior-refresh .ticker-track {animation-duration:46s}
+.refresh-v3.interior-refresh .section .wrap.narrow {max-width:820px}
+.refresh-v3.interior-refresh .grid {
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));
+}
+.refresh-v3.interior-refresh .section .card {padding:clamp(1.3rem,2.4vw,2rem)}
+.refresh-v3.interior-refresh .section .cta-row {gap:1rem;margin-top:2.2rem}
+.refresh-v3.interior-refresh .section h2 {max-width:22ch}
+.refresh-v3.interior-refresh .section .lede,
+.refresh-v3.interior-refresh .section .section-lede {max-width:49rem}
+.refresh-v3.interior-refresh .email a {overflow-wrap:anywhere}
+@media(max-width:550px){
+ .refresh-v3.interior-refresh .page-hero .hero-inner {padding-top:4rem;padding-bottom:4rem}
+ .refresh-v3.interior-refresh .page-hero h1 {font-size:clamp(2.75rem,11vw,4.3rem)}
+}
