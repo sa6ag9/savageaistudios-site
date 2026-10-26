@@ -65,8 +65,8 @@ test("contact, external Overmind, catalog and audits paths stay present",() => {
 });
 
 test("source design does not claim stale unsupported counts",() => {
-  assert.doesNotMatch(homepage,/\b81 AI actors\b|\b33 GitHub repositories\b|\b14 products with live checkout\b/);
-  assert.doesNotMatch(homepage,/data-count=["']81["']/);
+  assert.doesNotMatch(homepage,/\b33 GitHub repositories\b|\b14 products with live checkout\b|\b84 AI actors\b/);
+  assert.doesNotMatch(homepage,/data-count=/);
 });
 
 test("search metadata points at the public studio domain",() => {

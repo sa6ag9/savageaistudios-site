@@ -51,29 +51,11 @@
     revealEls.forEach(function (el) { ro.observe(el); });
   }
 
-  /* ---------- animated stat counters (final value already in HTML) ---------- */
-  var counters = document.querySelectorAll("[data-count]");
-  function runCounter(el) {
-    var target = parseInt(el.getAttribute("data-count"), 10);
-    if (isNaN(target) || reduce) { el.textContent = target; return; }
-    var start = null, dur = 1400;
-    function step(ts) {
-      if (!start) start = ts;
-      var p = Math.min((ts - start) / dur, 1);
-      var eased = 1 - Math.pow(1 - p, 3);
-      el.textContent = Math.round(target * eased);
-      if (p < 1) requestAnimationFrame(step);
-    }
-    requestAnimationFrame(step);
-  }
-  if ("IntersectionObserver" in window && !reduce) {
-    var co = new IntersectionObserver(function (entries) {
-      entries.forEach(function (en) {
-        if (en.isIntersecting) { runCounter(en.target); co.unobserve(en.target); }
-      });
-    }, { threshold: 0.5 });
-    counters.forEach(function (el) { co.observe(el); });
-  }
+  /* ---------- stat counters: intentionally static ----------
+     Stat numbers are final in the HTML and are never rewritten by script.
+     A count-up that rewrites the number from 0 makes crawlers, text
+     extractors and screen readers see "0" instead of the true value.
+     (Counter animation removed 2026-10-26.) */
 
   /* ---------- hover tilt + glow on cards (fine pointers only) ---------- */
   if (!reduce && window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
