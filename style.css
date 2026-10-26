@@ -230,3 +230,6 @@ footer a:hover { color: var(--electric); }
 .who { color: var(--muted); }
 .who strong { color: var(--text); }
 .waitlist { color: var(--muted); font-style: italic; }
+
+/* Master mark (V29b) as header logo image — added 2026-10-26. */
+.brand img.brand-mark { width: 2rem; height: 2rem; object-fit: contain; vertical-align: -0.55rem; margin-right: 0.55rem; border: 0; background: none; padding: 0; }

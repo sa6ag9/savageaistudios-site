@@ -4,7 +4,8 @@
    and every stat already shows its final number in the HTML. */
 (function () {
   "use strict";
-  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  var reduce = reducedMotion.matches;
   document.documentElement.classList.add("js");
 
   /* ---------- header shadow on scroll ---------- */
@@ -16,19 +17,26 @@
   }
 
   /* ---------- smooth page-out transition on internal links ---------- */
-  if (!reduce) {
-    document.addEventListener("click", function (e) {
-      var a = e.target.closest ? e.target.closest("a[href]") : null;
-      if (!a) return;
-      var href = a.getAttribute("href");
-      if (!href || href.charAt(0) === "#" || a.target === "_blank" ||
-          e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-      if (/^(https?:|mailto:)/i.test(href) && href.indexOf(location.pathname.split("/").pop()) === -1 && /^https?:/i.test(href)) return;
-      e.preventDefault();
-      document.body.classList.add("leaving");
-      setTimeout(function () { window.location.href = href; }, 200);
-    });
-  }
+  document.addEventListener("click", function (e) {
+    if (reducedMotion.matches || e.defaultPrevented || e.button !== 0) return;
+    var a = e.target.closest ? e.target.closest("a[href]") : null;
+    if (!a) return;
+    var href = a.getAttribute("href");
+    if (!href || href.charAt(0) === "#" || a.hasAttribute("download") ||
+        (a.target && a.target !== "_self") ||
+        e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    var targetUrl;
+    try { targetUrl = new URL(href, window.location.href); } catch (err) { return; }
+    // Never hijack external links, checkout flows, mailto or non-web schemes.
+    if (!/^https?:$/.test(targetUrl.protocol) ||
+        targetUrl.origin !== window.location.origin) return;
+    // Native in-page anchor navigation must preserve browser scrolling/history.
+    if (targetUrl.pathname === window.location.pathname &&
+        targetUrl.search === window.location.search && targetUrl.hash) return;
+    e.preventDefault();
+    document.body.classList.add("leaving");
+    setTimeout(function () { window.location.href = targetUrl.href; }, 200);
+  });
 
   /* ---------- scroll reveal ---------- */
   var revealEls = document.querySelectorAll(".reveal");
@@ -43,29 +51,11 @@
     revealEls.forEach(function (el) { ro.observe(el); });
   }
 
-  /* ---------- animated stat counters (final value already in HTML) ---------- */
-  var counters = document.querySelectorAll("[data-count]");
-  function runCounter(el) {
-    var target = parseInt(el.getAttribute("data-count"), 10);
-    if (isNaN(target) || reduce) { el.textContent = target; return; }
-    var start = null, dur = 1400;
-    function step(ts) {
-      if (!start) start = ts;
-      var p = Math.min((ts - start) / dur, 1);
-      var eased = 1 - Math.pow(1 - p, 3);
-      el.textContent = Math.round(target * eased);
-      if (p < 1) requestAnimationFrame(step);
-    }
-    requestAnimationFrame(step);
-  }
-  if ("IntersectionObserver" in window && !reduce) {
-    var co = new IntersectionObserver(function (entries) {
-      entries.forEach(function (en) {
-        if (en.isIntersecting) { runCounter(en.target); co.unobserve(en.target); }
-      });
-    }, { threshold: 0.5 });
-    counters.forEach(function (el) { co.observe(el); });
-  }
+  /* ---------- stat counters: intentionally static ----------
+     Stat numbers are final in the HTML and are never rewritten by script.
+     A count-up that rewrites the number from 0 makes crawlers, text
+     extractors and screen readers see "0" instead of the true value.
+     (Counter animation removed 2026-10-26.) */
 
   /* ---------- hover tilt + glow on cards (fine pointers only) ---------- */
   if (!reduce && window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
@@ -88,7 +78,8 @@
   document.querySelectorAll(".hero-canvas").forEach(function (canvas) {
     var ctx = canvas.getContext("2d");
     if (!ctx) return;
-    var W = 0, H = 0, parts = [], running = true, t = 0;
+    var W = 0, H = 0, parts = [], running = false, t = 0;
+    var rafId = 0, lastFrame = 0, visible = false;
     var N = window.innerWidth < 640 ? 55 : 110;
 
     function resize() {
@@ -160,19 +151,48 @@
         }
       }
     }
-    function loop() { if (running) drawFrame(false); requestAnimationFrame(loop); }
+    function loop(time) {
+      rafId = 0;
+      if (!running || document.hidden || reducedMotion.matches) return;
+      // The canvas is O(N²): cap the expensive draw updates on mobile CPUs.
+      var frameMs = window.innerWidth < 640 ? 1000 / 24 : 1000 / 30;
+      if (!lastFrame || time - lastFrame >= frameMs) {
+        drawFrame(false);
+        lastFrame = time;
+      }
+      rafId = requestAnimationFrame(loop);
+    }
+    function syncMotion() {
+      running = visible && !document.hidden && !reducedMotion.matches;
+      if (!running && rafId) { cancelAnimationFrame(rafId); rafId = 0; }
+      if (running && !rafId) rafId = requestAnimationFrame(loop);
+    }
 
     init();
-    window.addEventListener("resize", init);
-    if (reduce) {
-      drawFrame(true); // one static frame, no animation
-    } else if ("IntersectionObserver" in window) {
+    window.addEventListener("resize", function () {
+      init();
+      if (reducedMotion.matches) drawFrame(true);
+      lastFrame = 0;
+    });
+    document.addEventListener("visibilitychange", syncMotion);
+    var onMotionChange = function () {
+      if (reducedMotion.matches) drawFrame(true);
+      syncMotion();
+    };
+    if (reducedMotion.addEventListener) {
+      reducedMotion.addEventListener("change", onMotionChange);
+    } else if (reducedMotion.addListener) {
+      reducedMotion.addListener(onMotionChange);
+    }
+    if (reducedMotion.matches) drawFrame(true);
+    if ("IntersectionObserver" in window) {
       new IntersectionObserver(function (entries) {
-        running = entries[0].isIntersecting;
+        visible = !!entries[0].isIntersecting;
+        syncMotion();
       }).observe(canvas);
-      requestAnimationFrame(loop);
     } else {
-      requestAnimationFrame(loop);
+      visible = true;
+      syncMotion();
     }
   });
 })();

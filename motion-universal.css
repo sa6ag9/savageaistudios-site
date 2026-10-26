@@ -1,0 +1,57 @@
+/* Savage AI Studios: universal motion for nested product and book pages.
+   Scoped, progressive enhancement; without JS, all content remains visible.
+   Canvas is decorative and never intercepts pointer events. */
+.motion-universal {
+  --motion-cyan: #67ebed;
+  --motion-copper: #e9b778;
+  background-image: radial-gradient(circle at 75% 0, rgba(44,134,162,.09), transparent 32%);
+}
+.motion-universal .site-header {backdrop-filter:blur(14px)}
+.motion-universal main > section:first-child {
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  background:radial-gradient(ellipse at 80% 15%,rgba(56,134,157,.16),transparent 65%),linear-gradient(155deg,#111d29,#101216);
+}
+.motion-universal main > section:first-child > .wrap {position:relative;z-index:1}
+.motion-universal .site-motion-canvas {position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;z-index:0;opacity:.8}
+.motion-universal .hero h1,
+.motion-universal main > section:first-child h1 {
+  text-wrap:balance;
+  background:linear-gradient(118deg,#fff 15%,#c8faff 65%,#f2c991);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+}
+.motion-universal .hero .kicker,
+.motion-universal main > section:first-child .kicker {color:var(--motion-cyan)}
+.motion-universal main > section:first-child::after {
+  content:"";position:absolute;pointer-events:none;top:0;right:0;width:min(35%,240px);height:2px;
+  background:linear-gradient(90deg,transparent,var(--motion-cyan));opacity:.75
+}
+.motion-universal .card {
+  transition:transform .32s cubic-bezier(.2,.7,.2,1),border-color .26s ease,box-shadow .26s ease,background .26s ease;
+}
+@media (hover:hover) and (pointer:fine) {
+  .motion-universal .card:hover {transform:translateY(-5px);border-color:rgba(103,235,237,.65);box-shadow:0 17px 40px rgba(0,0,0,.34),0 0 25px rgba(103,235,237,.09)}
+  .motion-universal .buy-btn:hover {transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.27)}
+}
+.motion-universal .buy-btn {transition:transform .2s ease,background .2s ease,box-shadow .2s ease}
+.motion-universal .buy-btn:focus-visible,.motion-universal .card a:focus-visible {
+  outline:3px solid var(--motion-cyan);outline-offset:4px
+}
+/* Reveal classes are added only by JavaScript when observers are available. */
+.motion-universal .motion-enter {opacity:0;transform:translateY(20px)}
+.motion-universal .motion-enter.motion-visible {opacity:1;transform:none;
+  transition:opacity .62s cubic-bezier(.2,.7,.2,1),transform .62s cubic-bezier(.2,.7,.2,1)
+}
+.motion-universal .motion-enter.motion-visible:nth-child(3n+2) {transition-delay:.07s}
+.motion-universal .motion-enter.motion-visible:nth-child(3n+3) {transition-delay:.13s}
+@media(max-width:640px) {
+  .motion-universal .site-motion-canvas {opacity:.46}
+  .motion-universal .hero h1,.motion-universal main > section:first-child h1 {overflow-wrap:anywhere}
+}
+@media(prefers-reduced-motion:reduce) {
+  .motion-universal .motion-enter,.motion-universal .motion-enter.motion-visible {opacity:1!important;transform:none!important;transition:none!important}
+  .motion-universal .site-motion-canvas {display:none!important}
+  .motion-universal .card,.motion-universal .buy-btn {transition:none!important;transform:none!important}
+}
+/* Hidden/page-tab context is handled by JS; avoid animated CSS backgrounds to save battery. */
