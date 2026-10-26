@@ -59,7 +59,7 @@ test("all five Bubble destinations remain reachable through page links",() => {
 });
 
 test("contact, external Overmind, catalog and audits paths stay present",() => {
-  for(const href of ["mailto:sa6ag9@ovmtruth.com","https://ovmtruth.com","work.html","work.html#audits","products/","coloring-books/","coding-blind.html"]) {
+  for(const href of ["contact.html","mailto:savagnic@gmail.com","https://ovmtruth.com","work.html","work.html#audits","products/","coloring-books/","coding-blind.html"]) {
     assert.ok(pageLinks.includes(href),href);
   }
 });
@@ -112,10 +112,10 @@ test("catalog category navigation and purchase URLs stay stable",() => {
   assert.doesNotMatch(catalog,/81 actors built|33 repositories|Eleven product families, every one/);
 });
 
-test("all 39 discovered HTML pages load the correct accessible motion engine",() => {
-  const rootPages=["about.html","coding-blind.html","index.html","overmind.html","studio.html","work.html"];
+test("all 43 discovered HTML pages load the correct accessible motion engine",() => {
+  const rootPages=["about.html","coding-blind.html","contact-thanks.html","contact.html","faultline.html","index.html","legal.html","overmind.html","studio.html","work.html"];
   const nestedPages=["coloring-books/index.html","coloring-books/thanks-bird.html","coloring-books/thanks-bridge.html","coloring-books/thanks-honey.html","coloring-books/thanks-moon.html","coloring-books/thanks-rain.html","products/agent-protocol-settlement/index.html","products/ai-action-adjudication-api/index.html","products/anomaly-detection-api/index.html","products/benchmark-robustness-audit/index.html","products/causalswarm-consensus-assessment/index.html","products/ceros-cockpit-ui/index.html","products/computation-proof-certificate/index.html","products/conservation-sentinel-monitor/index.html","products/constitutional-governance-api/index.html","products/constitutional-triadic-scorer/index.html","products/domain-vertical-audit/index.html","products/dual-anchor-provenance-audit/index.html","products/durak-sca-engine/index.html","products/fusion-pre-shot-certification/index.html","products/index.html","products/mcp-bridge/index.html","products/mission-control-whitelabel/index.html","products/monetized-mcp-server/index.html","products/organism-watchdog/index.html","products/phase-space-navigator/index.html","products/post-quantum-signing-cli/index.html","products/powers-engine-api/index.html","products/quantum-verification-receipts/index.html","products/repo-reality-audit/index.html","products/sdee-api/index.html","products/symplectic-wasm-sdk/index.html","products/tollbooth-blackbox-api/index.html"];
-  assert.equal(rootPages.length+nestedPages.length,39);
+  assert.equal(rootPages.length+nestedPages.length,43);
   const sharedCss=readFileSync(resolve(root,"motion-universal.css"),"utf8");
   const sharedJs=readFileSync(resolve(root,"motion-universal.js"),"utf8");
   assert.match(sharedCss,/prefers-reduced-motion:reduce/);

@@ -90,7 +90,7 @@ test("external checkout, email and other origins are never intercepted",()=>{
     "https://buy.stripe.com/28E7sKaxKagE8n00yY4Ni03",
     "https://ovmtruth.com",
     "https://reviewloop.bubbleapps.io/",
-    "mailto:sa6ag9@ovmtruth.com",
+    "mailto:savagnic@gmail.com",
     "tel:+14155550123"
   ])assert.equal(h.click(url),false,url);
   assert.equal(h.timers.length,0);

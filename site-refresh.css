@@ -227,3 +227,22 @@
 
 /* Master mark (V29b) replaces the glyph tile in the refresh header — added 2026-10-26. */
 .refresh-v3 img.brand-mark { border: 0; background: none; object-fit: contain; padding: 0; }
+
+/* Round 2: qualitative authority band (replaces the numeric stats strip). */
+.refresh-v3 .authority-section {background:var(--bg-alt);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.refresh-v3 .authority-lede {max-width:56rem;font-size:clamp(1.25rem,2.2vw,1.7rem);line-height:1.55;font-weight:600;color:var(--text);margin:0 0 2.4rem}
+.refresh-v3 .authority-points {display:grid;grid-template-columns:repeat(3,1fr);gap:1.6rem}
+.refresh-v3 .authority-point {margin:0;padding:1.4rem 1.5rem;background:var(--panel);border:1px solid var(--line);border-radius:3px;color:var(--muted);line-height:1.6}
+.refresh-v3 .authority-point strong {display:block;color:var(--text);font-size:1.02rem;margin-bottom:.45rem}
+@media(max-width:850px){.refresh-v3 .authority-points{grid-template-columns:1fr}}
+
+/* Round 2: contact form. */
+.refresh-v3 .contact-form {display:grid;gap:1.15rem;max-width:42rem;margin-bottom:2rem}
+.refresh-v3 .form-field label {display:block;font-weight:700;font-size:.92rem;margin-bottom:.4rem;color:var(--text)}
+.refresh-v3 .form-field .optional {font-weight:400;color:var(--muted)}
+.refresh-v3 .form-field input,.refresh-v3 .form-field select,.refresh-v3 .form-field textarea {width:100%;box-sizing:border-box;background:var(--panel);border:1px solid var(--line);border-radius:3px;color:var(--text);padding:.8rem .9rem;font:inherit}
+.refresh-v3 .form-field input:focus,.refresh-v3 .form-field select:focus,.refresh-v3 .form-field textarea:focus {outline:3px solid var(--electric);outline-offset:2px}
+.refresh-v3 .form-privacy {margin:0;color:var(--muted);font-size:.92rem}
+.refresh-v3 .form-submit {justify-self:start;cursor:pointer;font:inherit}
+.refresh-v3 .hp-field {position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+.refresh-v3 .section p a {color:var(--electric)}
