@@ -224,3 +224,6 @@
  .refresh-v3.interior-refresh .page-hero .hero-inner {padding-top:4rem;padding-bottom:4rem}
  .refresh-v3.interior-refresh .page-hero h1 {font-size:clamp(2.75rem,11vw,4.3rem)}
 }
+
+/* Master mark (V29b) replaces the glyph tile in the refresh header — added 2026-10-26. */
+.refresh-v3 img.brand-mark { border: 0; background: none; object-fit: contain; padding: 0; }
