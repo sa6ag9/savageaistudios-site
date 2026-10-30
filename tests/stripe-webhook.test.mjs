@@ -36,7 +36,8 @@ const signed = (value, secret = SECRET, timestamp = NOW) => {
 
 test('site route durably records verified sale AND manual fulfillment work and deduplicates replay', async (t) => {
   const directory = await mkdtemp(join(tmpdir(), 'savage-site-fulfillment-'));
-  const route = createStripeWebhookRoute({ signingSecret: SECRET, offers: [OFFER], ledgerDirectory: directory, nowSeconds: () => NOW });
+  let now = NOW;
+  const route = createStripeWebhookRoute({ signingSecret: SECRET, offers: [OFFER], ledgerDirectory: directory, nowSeconds: () => now });
   const server = createServer(async (req, res) => {
     if (await route(req, res)) return;
     res.writeHead(404).end();
@@ -71,6 +72,12 @@ test('site route durably records verified sale AND manual fulfillment work and d
     assert.equal((await response.json()).duplicate, true);
   }
   assert.equal((await readdir(directory)).filter((name) => name.endsWith('.json')).length, 1);
+  // Stripe retries may receive an entirely new signature timestamp.
+  now = NOW + 60;
+  const retried = await post(signed(event(), SECRET, now));
+  assert.equal(retried.status, 200, 're-signing a retry must not create a new purchase');
+  assert.equal((await retried.json()).duplicate, true);
+  now = NOW;
   const secondRoute = createStripeWebhookRoute({ signingSecret: SECRET, offers: [OFFER], ledgerDirectory: directory, nowSeconds: () => NOW });
   assert.equal(typeof secondRoute, 'function', 'a restarted route reopens same durable ledger');
 
