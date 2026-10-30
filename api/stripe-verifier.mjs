@@ -55,15 +55,23 @@ function checkSignature(rawBody, header, secret, nowSeconds) {
   return timestamp;
 }
 
-export function verifyPaidCheckout(rawBody, header, secret, offers, nowSeconds = Math.floor(Date.now() / 1000)) {
-  // Verify raw bytes BEFORE JSON parse or any durable side effect.
+export function verifySignedCheckoutEnvelope(rawBody, header, secret, nowSeconds = Math.floor(Date.now() / 1000)) {
+  // Parse only after verifying Stripe's signature over the exact raw bytes.
   const observedAt = checkSignature(rawBody, header, secret, nowSeconds);
   let event;
   try { event = object(JSON.parse(rawBody.toString('utf8'))); }
   catch { reject('invalid event JSON'); }
   if (!event || event.type !== 'checkout.session.completed') reject('wrong event type');
   const session = object(object(event.data)?.object);
-  if (!session) reject('missing session');
+  if (!session || session.object !== 'checkout.session') reject('missing checkout session');
+  return { event, session, observedAt };
+}
+
+export function verifyPaidCheckout(rawBody, header, secret, offers,
+                                   nowSeconds = Math.floor(Date.now() / 1000),
+                                   verifiedLineItems = undefined) {
+  // Never use external enrichment to bypass verification of original bytes.
+  const { event, session, observedAt } = verifySignedCheckoutEnvelope(rawBody, header, secret, nowSeconds);
   const offer = offers.find((x) => x.paymentLinkId === session.payment_link);
   if (!offer) reject('unrecognized payment link');
   // Direct-account Stripe events often omit event.account; when present
@@ -71,7 +79,10 @@ export function verifyPaidCheckout(rawBody, header, secret, offers, nowSeconds =
   // The endpoint secret MUST be scoped to that account by deployment config.
   const account = event.account === undefined ? offer.accountId : event.account;
   const customer = object(session.customer_details);
-  const items = object(session.line_items);
+  // Stripe's signed webhook normally has no expanded line items. Only the
+  // server may supply data obtained from authenticated Stripe API retrieval.
+  // Never accept client-reported price or quantity as this argument.
+  const items = object(session.line_items) ?? object(verifiedLineItems);
   const lineItems = items?.data;
   const item = Array.isArray(lineItems) && lineItems.length === 1 ? object(lineItems[0]) : undefined;
   const price = object(item?.price);
