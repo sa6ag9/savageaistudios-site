@@ -1,0 +1,31 @@
+name: Phase 2 site purchase webhook tests
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: ["terra/phase2-facturforge-webhook-20261029"]
+
+permissions:
+  contents: read
+
+jobs:
+  offline-webhook-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run entire site suite with raw logs
+        shell: bash
+        run: |
+          set -o pipefail
+          npm test 2>&1 | tee phase2-site-test-output.log
+      - name: Save raw test output even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase2-site-test-output
+          path: phase2-site-test-output.log
+          if-no-files-found: warn
