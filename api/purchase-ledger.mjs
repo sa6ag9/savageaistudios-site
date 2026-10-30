@@ -18,7 +18,10 @@ export class PurchaseLedger {
     await mkdir(this.directory, { recursive: true, mode: 0o700 });
     const key = createHash('sha256').update(purchase.eventId).digest('hex');
     const destination = join(this.directory, `${key}.json`);
-    const binding = createHash('sha256').update(JSON.stringify(purchase)).digest('hex');
+    // Stripe signs each retry at a fresh timestamp. Signature observation time
+    // must not change the identity of an otherwise identical purchase.
+    const { observedAt, ...identity } = purchase;
+    const binding = createHash('sha256').update(JSON.stringify(identity)).digest('hex');
     const row = {
       schemaVersion: 1, eventId: purchase.eventId, purchaseBinding: binding,
       sale: {
