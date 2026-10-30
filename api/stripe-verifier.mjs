@@ -69,7 +69,7 @@ export function verifyPaidCheckout(rawBody, header, secret, offers, nowSeconds =
   // Direct-account Stripe events often omit event.account; when present
   // (e.g. Connect), the account must match the trusted account for this offer.
   // The endpoint secret MUST be scoped to that account by deployment config.
-  const account = text(event.account) ?? offer.accountId;
+  const account = event.account === undefined ? offer.accountId : event.account;
   const customer = object(session.customer_details);
   const items = object(session.line_items);
   const lineItems = items?.data;
