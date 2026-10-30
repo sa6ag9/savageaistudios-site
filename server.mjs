@@ -4,6 +4,7 @@ import { createStripeWebhookRoute } from './api/stripe-webhook.mjs';
 const offers = JSON.parse(process.env.SAVAGE_STRIPE_PRODUCTS_JSON ?? 'null');
 const route = createStripeWebhookRoute({
   signingSecret: process.env.STRIPE_WEBHOOK_SECRET,
+  stripeApiKey: process.env.STRIPE_API_READ_KEY,
   offers,
   ledgerDirectory: process.env.SAVAGE_PURCHASE_LEDGER_DIR
 });
