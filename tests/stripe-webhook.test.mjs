@@ -5,7 +5,7 @@ import { createServer } from 'node:http';
 import { mkdtemp, readdir, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { createStripeWebhookRoute } from '../api/stripe-webhook.mjs';
+import { createStripeWebhookRoute, retrieveStripeLineItems } from '../api/stripe-webhook.mjs';
 import { validateOfferCatalog, verifyPaidCheckout } from '../api/stripe-verifier.mjs';
 
 const SECRET = 'whsec_offline_fixture_only_not_live';
@@ -113,4 +113,65 @@ test('trusted product configuration and raw signature validation fail closed', (
   assert.throws(() => verifyPaidCheckout(Buffer.concat([correct.raw, Buffer.from(' ')]), correct.header, SECRET, [OFFER], NOW), /signature/);
   assert.throws(() => verifyPaidCheckout(correct.raw, undefined, SECRET, [OFFER], NOW), /header/);
   assert.throws(() => verifyPaidCheckout(correct.raw, 't=1,v1=bad', SECRET, [OFFER], NOW), /signature/);
+});
+
+
+test('normal unexpanded Stripe webhook retrieves trusted line items before durable sale', async (t) => {
+  const directory = await mkdtemp(join(tmpdir(), 'savage-lineitems-'));
+  let mode = 'valid';
+  let calls = 0;
+  const stripeApiKey = 'sk_test_OfflineRestrictedReadOnlyExampleKey';
+  const stripeFetch = async (url, config) => {
+    ++calls;
+    assert.equal(url, 'https://api.stripe.com/v1/checkout/sessions/cs_test_offline_site_event/line_items?limit=2');
+    assert.equal(config.method, 'GET');
+    assert.equal(config.headers.Authorization, 'Bearer ' + stripeApiKey);
+    if (mode === 'unavailable') return new Response('{"error":"unavailable"}', { status: 503 });
+    return Response.json({
+      object: 'list',
+      data: [{ quantity: 1, price: { id: mode === 'bad-price' ? 'price_wrong' : OFFER.priceId } }],
+      has_more: false
+    });
+  };
+  const route = createStripeWebhookRoute({
+    signingSecret: SECRET, stripeApiKey, stripeFetch,
+    offers: [OFFER], ledgerDirectory: directory, nowSeconds: () => NOW
+  });
+  const server = createServer(async (req, res) => {
+    if (await route(req, res)) return;
+    res.writeHead(404).end();
+  });
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  t.after(async () => {
+    await new Promise(resolve => server.close(resolve));
+    await rm(directory, { recursive: true, force: true });
+  });
+  const url = 'http://127.0.0.1:' + server.address().port + '/api/stripe/webhook';
+  const send = async (e, signingKey = SECRET) => {
+    const packet = signed(e, signingKey);
+    return fetch(url, { method: 'POST', headers: { 'stripe-signature': packet.header },
+      body: packet.raw });
+  };
+  const slimEvent = (id) => event({ line_items: undefined }, { id });
+  const accepted = await send(slimEvent('evt_unexpanded_paid_1'));
+  assert.equal(accepted.status, 200);
+  assert.equal((await accepted.json()).recorded, true);
+  assert.equal(calls, 1);
+  assert.equal((await readdir(directory)).filter(name => name.endsWith('.json')).length, 1);
+  mode = 'bad-price';
+  const badPrice = await send(slimEvent('evt_unexpanded_badprice'));
+  assert.equal(badPrice.status, 400);
+  assert.equal(calls, 2);
+  mode = 'unavailable';
+  const unavailable = await send(slimEvent('evt_unexpanded_unavailable'));
+  assert.equal(unavailable.status, 503);
+  assert.equal((await unavailable.json()).received, false);
+  assert.equal(calls, 3);
+  const unsigned = await send(slimEvent('evt_unexpanded_unsigned'), 'wrong_provider_signing_secret');
+  assert.equal(unsigned.status, 400);
+  assert.equal(calls, 3, 'reject signature BEFORE any Stripe network lookup');
+  assert.equal((await readdir(directory)).filter(name => name.endsWith('.json')).length, 1);
+
+  await assert.rejects(() => retrieveStripeLineItems('not-a-session-id', stripeApiKey, stripeFetch), /invalid checkout/);
+  await assert.rejects(() => retrieveStripeLineItems('cs_test_validid', '', stripeFetch), /key is not configured/);
 });
