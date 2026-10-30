@@ -13,11 +13,12 @@ This does **not** automatically send paid downloads or credentials. Every accept
 Set these environment variables in a server-side runtime:
 
 - `STRIPE_WEBHOOK_SECRET`: endpoint secret for the particular Stripe account/mode, never committed or exposed to the browser.
+- `STRIPE_API_READ_KEY`: a server-only account-scoped Stripe read key (a restricted key with Checkout line-item read permissions where supported), paired to the same account/mode; the webhook now makes a GET request to Stripe for normal unexpanded events.
 - `SAVAGE_PURCHASE_LEDGER_DIR`: absolute private persistent path with filesystem atomic hardlink and fsync support; **not ephemeral container storage**.
 - `SAVAGE_STRIPE_PRODUCTS_JSON`: JSON array of offers, each with `accountId`, `livemode`, `paymentLinkId`, `priceId`, `sku`, `amountTotal`, `currency`, `fulfillmentMode: "manual"`.
 - `PORT` and optional `HOST`: HTTPS reverse proxy must send unmodified raw body and `Stripe-Signature` to this service.
 
-Every offer on this one endpoint must belong to the *same account and mode* as its signing secret. Different accounts need independently configured endpoints. Session line items and `metadata.sku` must be present in the signed event; configure a supported Stripe expansion strategy and validate it in test mode. A normal unexpanded Stripe checkout event will be refused until that is configured.
+Every offer on this one endpoint must belong to the *same account and mode* as its signing secret. Different accounts need independently configured endpoints. Signed `metadata.sku` remains required. If signed `line_items` is absent (the normal webhook shape), the server now retrieves `/v1/checkout/sessions/{id}/line_items?limit=2` using its configured secret read key and confirms exactly one line item and the trusted Price ID/quantity. A missing key, failed lookup, ambiguous item count or extra pagination fails with HTTP 503 or rejection; **no sale is recorded**, so delivery is never triggered without price verification. Test-mode acceptance against Stripe and account-scoped read-key permissions remain required.
 
 **Never guess `plink_` or `price_` IDs from `buy.stripe.com` URLs.** The audit reports 43 site buy links, but no verified mapping of all 43 to Stripe account, Price ID, expected SKU and fulfillment method is stored in this repository. Populate the catalog from real account records before considering this route production-ready. Unmapped purchases fail closed.
 
